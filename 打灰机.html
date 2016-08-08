@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			#wrap{
+				box-shadow: 0 0 5px gold;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="wrap" width="" height=""></canvas>
+	</body>
+	<script type="text/javascript">
+		var myCanvas=document.getElementById("wrap");
+		var context=myCanvas.getContext("2d");
+		loading({
+			"bg":"background.png",
+			"hero" : "herofly.png",
+			"bullet" : "bullet2.png",
+			"enemy1" : "enemy1.png",
+			"enemy2" : "enemy2.png",
+			"enemy3" : "enemy3.png"
+		},{
+			complete:main,
+		});
+		function main(loadingImgs){
+			var bg=loadingImgs.bg;
+			var moves=0;
+			myCanvas.width=bg.width;
+			myCanvas.height=bg.height;
+			
+			var hero=new Hero();
+			var bulletArr=[];
+			var enemyArr=[];
+			var moves=0;
+			var disspeed=0;
+			if(moves>myCanvas.height){
+				moves=0;
+			}
+			
+			function Hero(){
+			this.img=loadingImgs.hero;
+			this.x=myCanvas.width/2-this.img.width/5/2;
+			this.y=myCanvas.height-this.img.height-10;
+			this.w=this.img.width/5;
+			this.h=this.img.height;
+			this.speed=20;
+			}
+			Hero.prototype.draw=function(){
+			context.drawImage(this.img,0,0,this.w,this.h,this.x,this.y,this.w,this.h);
+			if (flag) {
+					n+=0.2;
+					context.drawImage(hero.img,hero.w*parseInt(n),0,hero.w,hero.h,hero.x,hero.y,hero.w,hero.h);
+					if (n>4) {
+						n=0;
+					}
+					flag=false;
+				}
+			}
+			function random(max,min){
+				return parseInt(Math.floor(Math.random()*(max-min)+min));
+			}
+			function Enemy(){
+				var n =random(15,1);
+				this.diespeed=0;
+				if (n>=1&&n<12) {
+					this.img=loadingImgs.enemy1;
+					this.x=random(285,10);
+					this.y=-this.img.height;
+					this.w=this.img.width/5;
+					this.h=this.img.height;
+					this.speed=1.5;
+					this.blood=2;
+				} else if(n>=12&&n<14){
+					this.img=loadingImgs.enemy3;
+					this.x=random(285,10);
+					this.y=-this.img.height;
+					this.w=this.img.width/6;
+					this.h=this.img.height;
+					this.speed=1;
+					this.blood=4;
+				}else{
+					this.img=loadingImgs.enemy2;
+					this.x=random(240,10);
+					this.y=-this.img.height;
+					this.w=this.img.width/10;
+					this.h=this.img.height;
+					this.speed=0.5;
+					this.blood=7;
+				}
+				
+				this.move=function(){
+					this.y+=this.speed;
+				}
+				this.clear=function(){
+					for(var i=0;i<enemyArr.length;i++){
+						if(enemyArr[i].y>=myCanvas.height){
+							return true;
+						}else{
+							return false;
+						}
+					}
+				}
+			}
+			Enemy.prototype.draw=function(){
+				if(this.blood<=0){
+					this.diespeed+=0.2;
+					this.speed=0;
+					context.drawImage(this.img, this.w * parseInt(this.diespeed), 0, this.w, this.h, this.x, this.y, this.w, this.h);
+					if (this.diespeed>=this.img.width/this.w) {
+							this.y=myCanvas.height;
+						}
+					}else {
+						context.drawImage(this.img, 0, 0, this.w, this.h, this.x, this.y, this.w, this.h);
+				} 
+			}
+			var flag=false;
+			var n=0;
+			var p=0;
+
+			function draw(){
+				context.clearRect(0,0,myCanvas.width,myCanvas.height)
+				context.drawImage(bg,0,0,bg.width,bg.height,0,moves-myCanvas.height,myCanvas.width,myCanvas.height);
+				context.drawImage(bg,0,0,bg.width,bg.height,0,moves,myCanvas.width,myCanvas.height);
+				moves++;
+					if(moves>=myCanvas.height){
+						moves=0;
+					}
+				
+				
+				var enemy=new Enemy();
+				if (moves%10 == 0) {
+					var bullet = new Buttle();
+					bulletArr.push(bullet);
+					bullet.draw();
+				}
+				for (var i = 0; i < bulletArr.length; i++) {
+					bulletArr[i].draw();
+					bulletArr[i].move();
+					if (bulletArr[i].clear()) {
+						bulletArr.splice(i,1);
+						i--;
+					}
+				}
+				if (moves%70 == 0) {
+					var enemy = new Enemy();
+					enemyArr.push(enemy);
+					enemy.draw();
+				}
+				for (var i = 0; i < enemyArr.length; i++) {
+					enemyArr[i].draw();
+					enemyArr[i].move();
+					if(peng(enemyArr[i],hero)){
+						alert("GAME OVER");
+						myCanvas.style.display = "none";
+						
+					}
+					for(var j=0;j<bulletArr.length;j++){
+						if(peng(enemyArr[i],bulletArr[j])){
+							bulletArr.splice(j,1);
+							enemyArr[i].blood-=1;
+						}
+					}
+					if (enemyArr[i].clear()) {
+						enemyArr.splice(i,1);
+						i--;
+					}
+					
+				}
+				
+				hero.draw();
+				window.requestAnimationFrame(draw);
+			}
+			draw();
+
+		function peng(obj1,obj2){
+			var rx=obj1.x;
+			var rw=obj1.w+rx;
+			var ry=obj1.y;
+			var rh=obj1.h+ry;
+			
+			var bx=obj2.x;
+			var bw=obj2.w+bx;
+			var by=obj2.y;
+			var bh=obj2.h+by;
+			
+			if(rw>bx&&rx<bw&&rh>by&&ry<bh){
+				return true;
+			}else{
+				return false;
+			}
+		}
+
+
+
+			function Buttle(){
+				this.img=loadingImgs.bullet;
+				this.x=hero.x+8;
+				this.y=hero.y-20;
+				this.w=this.img.width;
+				this.h=this.img.height;
+				this.speed=10;
+				this.power=1
+				this.draw=function(){
+					context.drawImage(this.img,this.x,this.y);
+				}
+				this.move=function(){
+					this.y-=this.speed;
+				}
+				this.clear=function(){
+					for(var i=0;i<bulletArr.length;i++){
+						if(bulletArr[i].y<=-this.h){
+							return true;
+						}else{
+							return false;
+						}
+					}
+				}
+			}
+			
+			
+
+			
+				myCanvas.addEventListener("touchstart",function(){
+				console.log(event);
+				if(event.touches.length==1){
+					var x=event.touches[0].clientX;
+					var y=event.touches[0].clientY;
+					var disX=x-hero.x;
+					var disY=y-hero.y;
+					document.addEventListener("touchmove",function(){
+						hero.x=event.touches[0].clientX-disX;
+						hero.y=event.touches[0].clientY-disY;
+					},false);
+				}
+			});
+			
+
+			
+			document.onkeydown=function(e){
+				var ev=e||window.event;
+				switch(ev.keyCode){
+					case 37:
+						if(hero.x>=hero.speed){
+							hero.x -= hero.speed;
+						}
+							break;
+					case 38:
+						if(hero.y>=hero.speed){
+							hero.y -= hero.speed;
+						}
+							break;		
+					case 39:
+						if(hero.x<=myCanvas.width-hero.w-hero.speed){
+							hero.x += hero.speed;
+						}
+							break;
+					case 40:
+						if(hero.y<=myCanvas.height-hero.h-hero.speed){
+							hero.y += hero.speed;
+						}
+							break;			
+				}
+			}
+			
+		}
+		
+
+		
+		function loading(imgs,obj){
+			var loadingImgs = {};
+			var len = 0;
+			for (var i in imgs) {
+				len++;
+			}
+			var num = 0;
+			for (var i in imgs) {
+				var imgObj = new Image();
+				imgObj.src = imgs.bg = "background.png";
+				imgObj.src = imgs[i];
+				imgObj.onload = (function(i){
+					return function(){
+						num++;
+						loadingImgs[i] = this;
+						var scale = (num / len).toFixed(2)*100;
+						if(obj.progress){
+							obj.progress(scale);
+						}
+						if(num>=len){
+							if(obj.complete){
+								obj.complete(loadingImgs);
+							}
+						}	
+					}
+				})(i)
+			}	
+		}
+		
+		
+	</script>
+</html>
+

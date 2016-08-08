@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			#myCanvas{
+				box-shadow: 0 0 10px red;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="600" height="600"></canvas>
+	</body>
+	<script type="text/javascript">
+		var myCanvas = document.getElementById("myCanvas");
+		var context = myCanvas.getContext("2d");
+		var deg = Math.PI/180;
+		function die () {
+		
+		context.beginPath();
+		context.arc(300,300,225,0,360 * deg,true);
+		context.save();
+		context.strokeStyle = "black";
+		context.stroke();
+		context.closePath();
+		
+		context.beginPath();
+		context.arc(300,300,125,0,360 * deg,true);
+		context.save();
+		context.strokeStyle = "black";
+		context.stroke();
+		context.closePath();
+		
+		context.beginPath();
+		context.arc(300,300,175,0,360 * deg,true);
+		context.save();
+		context.strokeStyle = "black";
+		context.stroke();
+		context.closePath();
+		
+		context.beginPath();
+		context.arc(300,300,70,0,360 * deg,true);
+		context.save();
+		context.strokeStyle = "black";
+		context.stroke();
+		context.closePath();
+		
+		context.beginPath();
+		context.arc(350,350,300,0,360 * deg,true);
+		context.translate(300,300);
+		context.lineWidth = 5;
+		for (var i = 0; i < 60; i++) {
+			context.save();
+			context.rotate(6 *i * deg);
+			context.beginPath();
+			context.strokeStyle = "blue";
+			context.moveTo(225,0);
+			if (i%5 == 0) {
+				context.strokeStyle = "#FF0000";
+				context.lineTo(255,0);
+			}else{
+				context.lineTo(245,0);
+			}
+			context.stroke();
+			context.restore();
+		}
+		
+		context.arc(0,0,10,0,360 * deg,true);
+		context.fillStyle = "darkorchid";
+		context.fill();	
+		context.closePath();
+		context.restore()
+		}
+		die();
+	
+		function drawClock () {
+			context.save();
+			var time = new Date();
+			var hour = time.getHours();
+			var min = time.getMinutes();
+			var sec = time.getSeconds();
+			var s = hour*30+((min/60)*30);
+			var f = min*6+((sec*60)*6);
+
+			context.translate(300,300);
+			context.rotate(-90 * deg);
+			context.save();
+
+			context.rotate(sec*6*deg);
+			context.beginPath();
+			context.fillRect(0,-2.5,220,5);
+			context.fillStyle = "red";
+			context.fill();
+			context.closePath();
+
+			context.restore();
+			context.save();
+			context.rotate(f*deg);
+			context.beginPath();
+			context.fillRect(0,-5,210,10);
+			context.fillStyle = "red";
+			context.fill();
+			context.closePath();
+
+			context.restore();
+			context.rotate(s*deg);
+			context.beginPath();
+			context.fillStyle = "blue";
+			context.fillRect(0,-5,150,10);
+			context.fill();
+			context.closePath();
+			context.restore();
+		}
+		drawClock();
+
+		setInterval(function () {
+			context.clearRect(0,0,myCanvas.width,myCanvas.height);
+			die();
+			drawClock();
+		},1000)
+		
+		
+	</script>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

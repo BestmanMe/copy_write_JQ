@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+	</head>
+
+	<body>
+		<div id="div1">
+			<div class="aaa fes">
+				<div class="sd">
+
+				</div>
+				<div class="ddd">
+
+				</div>
+			</div>
+			<div class="mmm">
+
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript">
+		function findClass(obj, className) {
+			if (obj.getElementsByClassName) {
+				return obj.getElementsByClassName(className);
+			} else {
+				var tagArr = obj.getElementsByTagName("*");
+				var reg = new RegExp("\\b" + className + "\\b");
+				var classArr = [];
+				for (var i = 0; i < tagArr.length; i++) {
+					if (reg.test(tagArr[i].className)) {
+						classArr.push(tagArr[i]);
+					}
+				}
+				return classArr;
+			}
+		}
+
+		function selectEls(arg) {
+			var reg = /^\s+|\s+$/g;
+			arg = arg.replace(reg, "");
+			var reg = /\s+/g;
+			arg = arg.replace(reg, " ");
+			var elArrs = arg.split(" ");
+			var childs = [];
+			var parents = [document];
+			for (var i = 0; i < elArrs.length; i++) {
+				childs = [];
+				for (var j = 0; j < parents.length; j++) {
+					if (/^#/.test(elArrs[i])) {
+						var idName = elArrs[i].substring(1);
+						var els = document.getElementById(idName);
+						if (childs.indexOf(els) == -1) {
+							childs.push(els);
+						}
+					} else if (/^\./.test(elArrs[i])) {
+						var className = elArrs[i].substring(1);
+						var classArr = findClass(parents[j], className);
+						for (var k = 0; k < classArr.length; k++) {
+							childs.push(classArr[k]);
+						}
+					} else {
+						var arrs = parents[j].getElementsByTagName(elArrs[i]);
+						for (var k = 0; k < arrs.length; k++) {
+							childs.push(arrs[k]);
+						}
+					}
+				}
+				parents = childs;
+			}
+			return parents;
+		}
+
+		function ready(arg) {
+			if (window.addEventListener) {
+				document.addEventListener("DOMContentLoaded", arg, false);
+			} else {
+				var oS = document.createElement("script");
+				oS.defer = true;
+				oS.onreadystatechange = function() {
+					if (oS.readyState == "complete") {
+						arg();
+					}
+				}
+				var oH = document.getElementsByTagName("head")[0];
+				oH.appendChild(oS);
+			}
+		}
+
+		function Jq(arg) {
+			this.elements = [];
+			if (typeof arg == "function") {
+				ready(arg);
+			} else if (typeof arg == "string") {
+				this.elements = selectEls(arg);
+			} else {
+				this.elements.push(arg);
+			}
+		}
+		Jq.prototype.eq = function(index) {
+			return new Jq(this.elements[index]);
+		}
+
+		function addEvent(eventName, obj, fn) {
+			function callFn(e) {
+				var event = e || window.event;
+				fn.call(obj, event);
+			}
+			if (obj.addEventListener) {
+				obj.addEventListener(eventName, callFn, false);
+			} else {
+				obj.attachEvent("on" + eventName, callFn);
+			}
+		}
+		Jq.prototype.click = function(fn) {
+			for (var i = 0; i < this.elements.length; i++) {
+				addEvent("click", this.elements[i], fn);
+			}
+		}
+		Jq.prototype.on = function(eventName, fn) {
+			var eventArr = eventName.split(" ");
+			for (var i = 0; i < this.elements.length; i++) {
+				for (var j = 0; j < eventArr.length; j++) {
+					addEvent(eventArr[j], this.elements[i], fn);
+				}
+			}
+		}
+
+		function getStyle(obj, styleName) {
+			if (window.getComputedStyle) {
+				return getComputedStyle(obj, null)[styleName];
+			} else {
+				return obj.currentStyle(styleName);
+			}
+		}
+
+		function setStyle(obj, styleName, styleValue) {
+			var pxArr = ["width", "height", "left", "top"];
+			var values = styleValue;
+			for (var i = 0; i < pxArr.length; i++) {
+				if (pxArr[i] == styleName) {
+					if (typeof styleValue == "number") {
+						values = styleValue + "px";
+					} else {
+						values = styleValue;
+					}
+				}
+			}
+			obj.style[styleName] = values;
+		}
+
+		Jq.prototype.css = function() {
+			if (arguments.length == 1) {
+				if (typeof arguments[0] == "string") {
+					return getStyle(this.elements[0], arguments[0]);
+				} else {
+					for (var i = 0; i < this.elements.length; i++) {
+						for (var keys in arguments[0]) {
+							setStyle(this.elements[i], keys, arguments[0][keys]);
+						}
+					}
+				}
+			} else if (arguments.length == 2) {
+				for (var i = 0; i < this.elements.length; i++) {
+					setStyle(this.elements[i], arguments[0], arguments[1]);
+				}
+			}
+		}
+
+		function $(arg) {
+			return new Jq(arg);
+		}
+		
+
+</html>
